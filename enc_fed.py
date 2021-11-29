@@ -1,3 +1,5 @@
+import datetime
+
 import matplotlib
 import matplotlib.pyplot as plt
 import copy
@@ -140,7 +142,11 @@ if __name__ == '__main__':
     # self balanced
     db = DataBalance.DataBalance(dp)
     db.z_score()
-    db.assign_clients()
+    db.assign_clients_enc()
     dp.type = "train"
+    starttime = datetime.datetime.now()
     train(net_glob, db, w_glob, args)
     test(net_glob, dp, args,  "self_balanced", imbalanced_way)
+    endtime = datetime.datetime.now()
+    print("time: ")
+    print((endtime-starttime).seconds)
