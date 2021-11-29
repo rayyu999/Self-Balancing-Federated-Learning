@@ -118,13 +118,13 @@ if __name__ == '__main__':
     net_glob.train()
 
     # copy weights
-    w_glob = net_glob.state_dict()
-    starttime = datetime.datetime.now()
-    train(net_glob, db, w_glob, args)
-    test(net_glob, dp, args, "non-self_balanced", imbalanced_way)
-    endtime = datetime.datetime.now()
-    print("time: ")
-    print((endtime - starttime).seconds)
+    # w_glob = net_glob.state_dict()
+    # starttime = datetime.datetime.now()
+    # train(net_glob, db, w_glob, args)
+    # test(net_glob, dp, args, "non-self_balanced", imbalanced_way)
+    # endtime = datetime.datetime.now()
+    # print("time: ")
+    # print((endtime - starttime).seconds)
 
     # build new model
     net_glob = None
