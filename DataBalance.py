@@ -53,11 +53,11 @@ class DataBalance:
             while client_pool and len(new_mediator) < self.gamma:
                 select_client, kl_score = None, float('inf')
                 for client in client_pool:
-                    sum = np.hstack([mediator_label_pool, local_train_label_ciphertexts[client]])
-                    sum = []
-                    new_kl_score = self.dp.get_kl_divergence_enc(self.dp.global_train_label,
-                                                             np.hstack([mediator_label_pool,
-                                                                        local_train_label_ciphertexts[client]]))
+                    summ = np.hstack([mediator_label_pool, local_train_label_ciphertexts[client]])
+                    r = random.randint(1, 2048)
+                    summ = [r * x for x in summ]
+                    summ = [self.sk1.decrypt(x) for x in summ]
+                    new_kl_score = self.dp.get_kl_divergence_enc(self.dp.global_train_label, summ)
                     if new_kl_score < kl_score:
                         select_client = client
                 new_mediator.add(select_client)

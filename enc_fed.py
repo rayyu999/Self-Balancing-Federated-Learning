@@ -95,7 +95,7 @@ if __name__ == '__main__':
         imbalanced_way = "global"
     # without self-balanced
     db = DataBalance.DataBalance(dp)
-    db.assign_clients(balance=False)
+    db.assign_clients_enc(balance=False)
     # load dataset and split users
     img_size = dp[0][0].shape
 
