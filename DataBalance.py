@@ -2,6 +2,7 @@ import numpy as np
 import math
 import random
 from imgaug import augmenters as iaa
+from phe import paillier
 
 
 class DataBalance:
@@ -11,6 +12,8 @@ class DataBalance:
         self.ta = -0.1
         self.mediator = []
         self.gamma = 3  # the maximum number for a mediator can communicate
+        self.pk0, self.sk0 = paillier.generate_paillier_keypair()
+        self.pk1, self.sk1 = paillier.generate_paillier_keypair()
 
     def assign_clients(self, balance=True):
         # assign the devices to each mediator using greedy algorithm
@@ -27,6 +30,34 @@ class DataBalance:
                     new_kl_score = self.dp.get_kl_divergence(self.dp.global_train_label,
                                                              np.hstack([mediator_label_pool,
                                                                         self.dp.local_train_label[client]]))
+                    if new_kl_score < kl_score:
+                        select_client = client
+                new_mediator.add(select_client)
+                mediator_label_pool = np.hstack([mediator_label_pool, self.dp.local_train_label[select_client]])
+                client_pool.remove(select_client)
+            self.mediator.append(new_mediator)
+
+    def assign_clients_enc(self, balance=True):
+        # assign the devices to each mediator using greedy algorithm
+        if not balance:
+            self.mediator = [{i} for i in range(self.dp.size_device)]
+            return
+        client_pool = set([i for i in range(self.dp.size_device)])
+        local_train_label_ciphertexts = np.array([])
+        for client in client_pool:
+            local_train_label_ciphertexts[client] = [self.pk1.encrypt(x) for x in self.dp.local_train_label[client]]
+        while client_pool:
+            new_mediator = set()
+            mediator_label_pool = np.array([])
+            mediator_label_pool = [self.pk1.encrypt(x) for x in mediator_label_pool]
+            while client_pool and len(new_mediator) < self.gamma:
+                select_client, kl_score = None, float('inf')
+                for client in client_pool:
+                    sum = np.hstack([mediator_label_pool, local_train_label_ciphertexts[client]])
+                    sum = []
+                    new_kl_score = self.dp.get_kl_divergence_enc(self.dp.global_train_label,
+                                                             np.hstack([mediator_label_pool,
+                                                                        local_train_label_ciphertexts[client]]))
                     if new_kl_score < kl_score:
                         select_client = client
                 new_mediator.add(select_client)
