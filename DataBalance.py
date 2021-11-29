@@ -46,7 +46,7 @@ class DataBalance:
         client_pool = set([i for i in range(self.dp.size_device)])
         local_train_label_ciphertexts = np.array([])
         for client in client_pool:
-            local_train_label_ciphertexts[client] = [self.pk1.encrypt(x) for x in self.dp.local_train_label[client]]
+            local_train_label_ciphertexts[client] = [self.pk1.encrypt(x) for x in self.dp.local_train_label[client].tolist()]
         while client_pool:
             new_mediator = set()
             mediator_label_pool = np.array([])
