@@ -64,28 +64,28 @@ class LocalUpdate(object):
         optimizer = torch.optim.SGD(net.parameters(), lr=self.args.lr, momentum=self.args.momentum)
 
         epoch_loss = []
-        for i in range(self.device_num):
-            w_i = net.state_dict()
-            w_i_enc = dict()
-            for key in w_i.keys():
-                w_i_enc[key] = crypten.cryptensor(w_i[key])
-                w_i[key] = w_i_enc[key].get_plain_text()
-            net.load_state_dict(w_i)
-            for iter in range(self.args.local_ep):
-                batch_loss = []
-                for batch_idx, (images, labels) in enumerate(self.ldr_train):
-                    images, labels = images.to(self.args.device), labels.to(self.args.device)
-                    net.zero_grad()
-                    log_probs = net(images)
-                    loss = self.loss_func(log_probs, labels)
-                    loss.backward()
-                    optimizer.step()
-                    if self.args.verbose and batch_idx % 10 == 0:
-                        print('Update Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                            iter, batch_idx * len(images), len(self.ldr_train.dataset),
-                                   100. * batch_idx / len(self.ldr_train), loss.item()))
-                    batch_loss.append(loss.item())
-                epoch_loss.append(sum(batch_loss)/len(batch_loss))
+        # for i in range(self.device_num):
+        #     w_i = net.state_dict()
+        #     w_i_enc = dict()
+        #     for key in w_i.keys():
+        #         w_i_enc[key] = crypten.cryptensor(w_i[key])
+        #         w_i[key] = w_i_enc[key].get_plain_text()
+        #     net.load_state_dict(w_i)
+        for iter in range(self.args.local_ep):
+            batch_loss = []
+            for batch_idx, (images, labels) in enumerate(self.ldr_train):
+                images, labels = images.to(self.args.device), labels.to(self.args.device)
+                net.zero_grad()
+                log_probs = net(images)
+                loss = self.loss_func(log_probs, labels)
+                loss.backward()
+                optimizer.step()
+                if self.args.verbose and batch_idx % 10 == 0:
+                    print('Update Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+                        iter, batch_idx * len(images), len(self.ldr_train.dataset),
+                               100. * batch_idx / len(self.ldr_train), loss.item()))
+                batch_loss.append(loss.item())
+            epoch_loss.append(sum(batch_loss)/len(batch_loss))
         w, w_enc = net.state_dict(), dict()
         for key in w.keys():
             w_enc[key] = crypten.cryptensor(w[key])
