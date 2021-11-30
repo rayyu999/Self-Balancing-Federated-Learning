@@ -162,7 +162,10 @@ if __name__ == '__main__':
 
     dp.type = "train"
     starttime = datetime.datetime.now()
-    train(net_glob, db, crypten.cryptensor(w_glob), args)
+    w_glob_enc = dict()
+    for key in w_glob_enc.keys():
+        w_glob_enc[key] = crypten.cryptensor(w_glob[key])
+    train(net_glob, db, w_glob_enc, args)
     endtime = datetime.datetime.now()
     training_time = endtime - starttime
 
