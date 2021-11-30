@@ -66,12 +66,10 @@ class DataBalance:
                 for client in client_pool:
                     r = random.randint(1, 1024)
                     d_cipher = dict()
-                    sum = 0
                     for key in mediator_distribution.keys():
                         d_cipher[key] = (mediator_distribution[key] + client_cipher_pool[client][key]) * r
                         d_cipher[key] = self.sk1.decrypt(d_cipher[key])
-                        sum += d_cipher[key]
-                    new_kl_score = self.dp.get_kl_divergence_enc(self.dp.global_train_label, d_cipher, sum)
+                    new_kl_score = self.dp.get_kl_divergence_enc(self.dp.global_train_label, d_cipher)
                     if new_kl_score < kl_score:
                         select_client = client
                 new_mediator.add(select_client)
