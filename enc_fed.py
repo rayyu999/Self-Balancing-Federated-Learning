@@ -55,9 +55,10 @@ def train(net_glob, db, w_glob, args):
         w_glob = FedAvg_enc(w_locals)
 
         # copy weight to net_glob
+        w_glob_plaintext = dict()
         for key in w_glob_enc.keys():
-            w_glob[key] = w_glob[key].get_plain_text()
-        net_glob.load_state_dict(w_glob)
+            w_glob_plaintext[key] = w_glob[key].get_plain_text()
+        net_glob.load_state_dict(w_glob_plaintext)
 
         # print loss
         loss_avg = sum(loss_locals) / len(loss_locals)
