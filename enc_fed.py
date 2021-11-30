@@ -145,12 +145,24 @@ if __name__ == '__main__':
     w_glob = net_glob.state_dict()
     # self balanced
     db = DataBalance.DataBalance(dp)
+
+    starttime = datetime.datetime.now()
     db.z_score_enc()
+    endtime = datetime.datetime.now()
+    merging_time = endtime - starttime
+
+    starttime = datetime.datetime.now()
     db.assign_clients_enc()
+    endtime = datetime.datetime.now()
+    resheduling_time = endtime - starttime
+
     dp.type = "train"
     starttime = datetime.datetime.now()
     train(net_glob, db, w_glob, args)
+    endtime = datetime.datetime.now()
+    training_time = endtime - starttime
+
     test(net_glob, dp, args,  "self_balanced", imbalanced_way)
     endtime = datetime.datetime.now()
-    print("time: ")
-    print((endtime-starttime).seconds)
+    print("merging time: {m}s; resheduling time: {r}s; training time: {t}s"
+          .format(m=merging_time.seconds, r=resheduling_time.seconds, t=training_time.seconds))
