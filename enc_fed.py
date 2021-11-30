@@ -4,11 +4,12 @@ import matplotlib
 import matplotlib.pyplot as plt
 import copy
 import torch
+import crypten
 
 from utils.options import args_parser
 from models.Update import LocalUpdate
 from models.Nets import MLP, CNNMnist, CNNCifar
-from models.Fed import FedAvg
+from models.Fed import FedAvg_enc
 from models.test import test_img
 
 import DataBalance
@@ -42,8 +43,8 @@ def train(net_glob, db, w_glob, args):
                 w_locals = []
             need_index = [db.dp.local_train_index[k] for k in mdt]
             local = LocalUpdate(args=args, dataset=dp, idxs=np.hstack(need_index))
-            w, loss = local.train(
-                net=copy.deepcopy(net_glob).to(args.device))  # for lEpoch in range(E): 在local.train完成
+            w, loss = local.train_enc(
+                net=copy.deepcopy(net_glob).to(args.device), w_enc=copy.deepcopy(w_glob))
             if args.all_clients:
                 w_locals[i] = copy.deepcopy(w)
             else:
@@ -51,9 +52,11 @@ def train(net_glob, db, w_glob, args):
             loss_locals.append(copy.deepcopy(loss))
 
         # update global weights
-        w_glob = FedAvg(w_locals)
+        w_glob_enc = FedAvg_enc(w_locals)
 
         # copy weight to net_glob
+        for key in w_glob_enc.keys():
+            w_glob[key] = w_glob_enc[key].get_plain_text()
         net_glob.load_state_dict(w_glob)
 
         # print loss
@@ -82,6 +85,7 @@ if __name__ == '__main__':
     # parse args
     args = args_parser()
     args.device = torch.device('cuda:{}'.format(args.gpu) if torch.cuda.is_available() and args.gpu != -1 else 'cpu')
+    crypten.init()
     # new instances for DataProcessor and DataBalance
     dp = DataProcessor.DataProcessor()
     dp.get_input('mnist')
@@ -158,7 +162,7 @@ if __name__ == '__main__':
 
     dp.type = "train"
     starttime = datetime.datetime.now()
-    train(net_glob, db, w_glob, args)
+    train(net_glob, db, crypten.cryptensor(w_glob), args)
     endtime = datetime.datetime.now()
     training_time = endtime - starttime
 
