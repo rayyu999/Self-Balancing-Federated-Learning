@@ -14,10 +14,17 @@ class DataBalance:
         self.ta = -0.1
         self.mediator = []
         self.gamma = 3  # the maximum number for a mediator can communicate
-        self.pk0, self.sk0 = paillier.generate_paillier_keypair()
-        self.pk1, self.sk1 = paillier.generate_paillier_keypair()
+
         self.mediator_distribution = dict()
         self.client_cipher_pool = dict()
+
+        self.pk0, self.sk0 = paillier.generate_paillier_keypair()
+        self.pk1, self.sk1 = paillier.generate_paillier_keypair()
+        self.client_key_pairs = dict()
+        for client in range(self.dp.size_device):
+            key_pair = dict()
+            key_pair['pk'], key_pair['sk'] = paillier.generate_paillier_keypair()
+            self.client_key_pairs[client] = key_pair
 
     def assign_clients(self, balance=True):
         # assign the devices to each mediator using greedy algorithm
