@@ -267,4 +267,5 @@ class DataProcessor:
             self.global_train_feature = np.vstack([self.global_train_feature, self.local_train_feature[i]])
             self.global_train_label = np.hstack([self.global_train_label, self.local_train_label[i]])
             self.local_train_index.append(np.arange(idx_start, idx_start+len(self.local_train_label[i])))
+        print(self.global_train_label)
     #  endregion

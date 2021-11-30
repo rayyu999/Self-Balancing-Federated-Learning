@@ -16,6 +16,8 @@ class DataBalance:
         self.gamma = 3  # the maximum number for a mediator can communicate
         self.pk0, self.sk0 = paillier.generate_paillier_keypair()
         self.pk1, self.sk1 = paillier.generate_paillier_keypair()
+        self.mediator_distribution = dict()
+        self.client_cipher_pool = dict()
 
     def assign_clients(self, balance=True):
         # assign the devices to each mediator using greedy algorithm
@@ -46,17 +48,6 @@ class DataBalance:
             return
 
         client_pool = set([i for i in range(self.dp.size_device)])
-        client_cipher_pool = dict()
-        for client in client_pool:
-            c1 = collections.Counter(self.dp.local_train_label[client])
-            cipher = dict()
-            for key in c1.keys():
-                cipher[key] = self.pk1.encrypt(c1[key])
-            client_cipher_pool[client] = cipher
-        mediator_distribution = dict()
-        c2 = collections.Counter(self.dp.global_train_label)
-        for key in c2.keys():
-            mediator_distribution[key] = self.pk1.encrypt(0)
 
         while client_pool:
             new_mediator = set()
@@ -66,8 +57,8 @@ class DataBalance:
                 for client in client_pool:
                     r = random.randint(1, 1024)
                     d_cipher = dict()
-                    for key in mediator_distribution.keys():
-                        d_cipher[key] = (mediator_distribution[key] + client_cipher_pool[client][key]) * r
+                    for key in self.mediator_distribution.keys():
+                        d_cipher[key] = (self.mediator_distribution[key] + self.client_cipher_pool[client][key]) * r
                         d_cipher[key] = self.sk1.decrypt(d_cipher[key])
                     new_kl_score = self.dp.get_kl_divergence_enc(self.dp.global_train_label, d_cipher)
                     if new_kl_score < kl_score:
@@ -92,6 +83,84 @@ class DataBalance:
         """
         # 2 : Initialize
         r_ad = np.zeros(self.dp.size_class)
+
+        # 3 : Calculate the data size of each class C
+        num_each_class = np.zeros(self.dp.size_class)
+        for i in self.dp.global_train_label:
+            num_each_class[i] = num_each_class[i] + 1
+
+        # 4 : Calculate the mean m and the standard deviation s of C
+        mean = np.mean(num_each_class)
+        std = np.std(num_each_class, ddof=1)
+        if std == 0:
+            return
+        # 5 : Calculate the z-score
+        z = (num_each_class- mean) / std
+        # 6-12 :
+        y_down = set()
+        y_aug = set()
+        for y in range(self.dp.size_class):
+            if z[y] < self.ta:
+                y_aug.add(y)
+                r_ad[y] = (-std * math.sqrt(z[y] * self.ta) + mean) / num_each_class[y]
+            elif z[y] > self.td:
+                y_down.add(y)
+                r_ad[y] = (std * math.sqrt(z[y] * self.td) + mean) / num_each_class[y]
+
+        # 13 : Send Yaug, Ydown, Rad to all clients ===================================================
+        """
+        The Clients part (Algorithm 2)
+        """
+        # 15-22 :
+        for k in range(self.dp.size_device):
+            print('size: {}'.format(k))
+            new_feature_array = np.empty([0, self.dp.size_feature])
+            new_label = []
+            for i in range(len(self.dp.local_train_feature[k])):
+                if i % 1000 == 0:
+                    print('the {}th feature'.format(i))
+                x, y = self.dp.local_train_feature[k][i], self.dp.local_train_label[k][i]
+                new_x, new_y = x, y
+                if y in y_down:
+                    new_x, new_y = self.down_sample(x, y, r_ad[y])
+                elif y in y_aug:
+                    aug_x, aug_y = self.augment(x, y, r_ad[y]-1)
+                    if aug_x is not None:
+                        new_feature_array = np.vstack([new_feature_array, aug_x])
+                        new_label.append(aug_y)
+                if new_x is not None:
+                    new_feature_array = np.vstack([new_feature_array, new_x])
+                    new_label.append(new_y)
+            self.dp.local_train_feature[k] = new_feature_array
+            self.dp.local_train_label[k] = np.array(new_label)
+        self.dp.refresh_global_data()
+
+    def z_score_enc(self):
+        """
+        The FL Server part (Algorithm 2)
+        The td and ta are the downsampling threshold and augmentation threshold
+        Set Ta = -1/Td , the recommended value of td is 3.0 or 3.5
+        The Rad is the ratio we use to control how many augmentations are generated or how many samples are retained.
+        N : Number of classes
+        K : Total number of clients
+        labels : All the data label
+        Ydown : set of majority class
+        Yaug : set of minority class
+        datasets : K clients datasets
+        """
+        # 2 : Initialize
+        r_ad = np.zeros(self.dp.size_class)
+
+        client_pool = set([i for i in range(self.dp.size_device)])
+        for client in client_pool:
+            c1 = collections.Counter(self.dp.local_train_label[client])
+            cipher = dict()
+            for key in c1.keys():
+                cipher[key] = self.pk1.encrypt(c1[key])
+            self.client_cipher_pool[client] = cipher
+        c2 = collections.Counter(self.dp.global_train_label)
+        for key in c2.keys():
+            self.mediator_distribution[key] = self.pk1.encrypt(0)
 
         # 3 : Calculate the data size of each class C
         num_each_class = np.zeros(self.dp.size_class)
