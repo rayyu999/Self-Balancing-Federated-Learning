@@ -141,7 +141,10 @@ class DataProcessor:
         d1, d2 = [], []
         for key in g.keys():
             d1.append(g[key] / len(input1))
-            d2.append(input2[key] / sum(input2.values()))
+            if key in input2:
+                d2.append(input2[key] / sum(input2.values()))
+            else:
+                d2.append(0)
         return sum(sp.rel_entr(d1, d2))
     # endregion
 

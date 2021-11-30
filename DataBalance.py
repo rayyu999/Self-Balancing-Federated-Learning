@@ -52,6 +52,9 @@ class DataBalance:
         while client_pool:
             new_mediator = set()
             mediator_label_pool = np.array([])
+            c2 = collections.Counter(self.dp.global_train_label)
+            for key in c2.keys():
+                self.mediator_distribution[key] = self.pk1.encrypt(0)
             while client_pool and len(new_mediator) < self.gamma:
                 select_client, kl_score = None, float('inf')
                 for client in client_pool:
@@ -151,21 +154,22 @@ class DataBalance:
         # 2 : Initialize
         r_ad = np.zeros(self.dp.size_class)
 
+        # 3 : Calculate the data size of each class C
+        num_each_class_cipher = dict()
+        for key in collections.Counter(self.dp.global_train_label).keys():
+            num_each_class_cipher[key] = self.pk1.encrypt(0)
         client_pool = set([i for i in range(self.dp.size_device)])
         for client in client_pool:
             c1 = collections.Counter(self.dp.local_train_label[client])
             cipher = dict()
             for key in c1.keys():
                 cipher[key] = self.pk1.encrypt(c1[key])
+                num_each_class_cipher[key] += cipher[key]
             self.client_cipher_pool[client] = cipher
-        c2 = collections.Counter(self.dp.global_train_label)
-        for key in c2.keys():
-            self.mediator_distribution[key] = self.pk1.encrypt(0)
 
-        # 3 : Calculate the data size of each class C
         num_each_class = np.zeros(self.dp.size_class)
-        for i in self.dp.global_train_label:
-            num_each_class[i] = num_each_class[i] + 1
+        for key in num_each_class_cipher.keys():
+            num_each_class[key] = self.sk1.decrypt(num_each_class_cipher[key])
 
         # 4 : Calculate the mean m and the standard deviation s of C
         mean = np.mean(num_each_class)
