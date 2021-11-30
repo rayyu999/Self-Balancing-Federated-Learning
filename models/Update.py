@@ -86,5 +86,8 @@ class LocalUpdate(object):
                                    100. * batch_idx / len(self.ldr_train), loss.item()))
                     batch_loss.append(loss.item())
                 epoch_loss.append(sum(batch_loss)/len(batch_loss))
-        return crypten.cryptensor(net.state_dict()), sum(epoch_loss) / len(epoch_loss)
+        w, w_enc = net.state_dict(), dict()
+        for key in w.keys():
+            w_enc[key] = crypten.cryptensor(w[key])
+        return w_enc, sum(epoch_loss) / len(epoch_loss)
 
