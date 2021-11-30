@@ -145,7 +145,7 @@ if __name__ == '__main__':
     w_glob = net_glob.state_dict()
     # self balanced
     db = DataBalance.DataBalance(dp)
-    db.z_score()
+    db.z_score_enc()
     db.assign_clients_enc()
     dp.type = "train"
     starttime = datetime.datetime.now()
