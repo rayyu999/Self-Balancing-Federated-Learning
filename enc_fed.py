@@ -52,12 +52,12 @@ def train(net_glob, db, w_glob, args):
             loss_locals.append(copy.deepcopy(loss))
 
         # update global weights
-        w_glob_enc = FedAvg_enc(w_locals)
+        w_glob = FedAvg_enc(w_locals)
 
         # copy weight to net_glob
-        for key in w_glob_enc.keys():
-            w_glob[key] = w_glob_enc[key].get_plain_text()
-        net_glob.load_state_dict(w_glob)
+        # for key in w_glob_enc.keys():
+        #     w_glob[key] = w_glob[key].get_plain_text()
+        # net_glob.load_state_dict(w_glob)
 
         # print loss
         loss_avg = sum(loss_locals) / len(loss_locals)

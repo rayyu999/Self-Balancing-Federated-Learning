@@ -55,6 +55,7 @@ class LocalUpdate(object):
         return net.state_dict(), sum(epoch_loss) / len(epoch_loss)
 
     def train_enc(self, net, w_enc):
+        crypten.init()
         w = dict()
         for key in w_enc.keys():
             w[key] = w_enc[key].get_plain_text()
