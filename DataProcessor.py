@@ -137,11 +137,11 @@ class DataProcessor:
 
     @staticmethod
     def get_kl_divergence_enc(input1, input2):
-        c1, c2 = collections.Counter(input1), collections.Counter(input2)
+        g = collections.Counter(input1)
         d1, d2 = [], []
-        for key in c1.keys():
-            d1.append(c1[key] / len(input1))
-            d2.append(c2[key] / len(input2))
+        for key in g.keys():
+            d1.append(g[key] / len(input1))
+            d2.append(input2[key] / len(input2))
         return sum(sp.rel_entr(d1, d2))
     # endregion
 

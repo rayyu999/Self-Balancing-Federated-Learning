@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import random
+import collections
 from imgaug import augmenters as iaa
 from phe import paillier
 import datetime
@@ -43,22 +44,32 @@ class DataBalance:
         if not balance:
             self.mediator = [{i} for i in range(self.dp.size_device)]
             return
+
         client_pool = set([i for i in range(self.dp.size_device)])
-        local_train_label_ciphertexts = [self.pk1.encrypt(0) for i in range(self.dp.size_device)]
+        client_cipher_pool = dict()
         for client in client_pool:
-            local_train_label_ciphertexts[client] = [self.pk1.encrypt(x) for x in self.dp.local_train_label[client].tolist()]
+            c1 = collections.Counter(self.dp.local_train_label[client])
+            cipher = dict()
+            for key in c1.keys():
+                cipher[key] = self.pk1.encrypt(c1[key])
+            client_cipher_pool[client] = cipher
+        mediator_distribution = dict()
+        c2 = collections.Counter(self.dp.global_train_label)
+        for key in c2.keys():
+            mediator_distribution[key] = self.pk1.encrypt(0)
+
         while client_pool:
             new_mediator = set()
             mediator_label_pool = np.array([])
-            mediator_label_pool = [self.pk1.encrypt(x) for x in mediator_label_pool]
             while client_pool and len(new_mediator) < self.gamma:
                 select_client, kl_score = None, float('inf')
                 for client in client_pool:
-                    summ = np.hstack([mediator_label_pool, local_train_label_ciphertexts[client]])
-                    r = random.randint(1, 2048)
-                    summ = [r * x for x in summ]
-                    summ = [self.sk1.decrypt(x) for x in summ]
-                    new_kl_score = self.dp.get_kl_divergence_enc(self.dp.global_train_label, summ)
+                    r = random.randint(1, 1024)
+                    d_cipher = dict()
+                    for key in mediator_distribution.keys():
+                        d_cipher[key] = (mediator_distribution[key] + client_cipher_pool[client][key]) * r
+                        d_cipher[key] = self.sk1.decrypt(d_cipher[key])
+                    new_kl_score = self.dp.get_kl_divergence_enc(self.dp.global_train_label, d_cipher)
                     if new_kl_score < kl_score:
                         select_client = client
                 new_mediator.add(select_client)
