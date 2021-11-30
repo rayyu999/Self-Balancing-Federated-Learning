@@ -43,7 +43,6 @@ def train(net_glob, db, w_glob, args):
                 w_locals = []
             need_index = [db.dp.local_train_index[k] for k in mdt]
             local = LocalUpdate(args=args, dataset=dp, idxs=np.hstack(need_index))
-            print(w_glob)
             w, loss = local.train_enc(
                 net=copy.deepcopy(net_glob).to(args.device), w_enc=copy.deepcopy(w_glob))
             if args.all_clients:
@@ -166,8 +165,6 @@ if __name__ == '__main__':
     w_glob_enc = dict()
     for key in w_glob.keys():
         w_glob_enc[key] = crypten.cryptensor(w_glob[key])
-    print(w_glob)
-    print(w_glob_enc)
     train(net_glob, db, w_glob_enc, args)
     endtime = datetime.datetime.now()
     training_time = endtime - starttime
