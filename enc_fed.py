@@ -164,7 +164,7 @@ if __name__ == '__main__':
     dp.type = "train"
     starttime = datetime.datetime.now()
     w_glob_enc = dict()
-    for key in w_glob_enc.keys():
+    for key in w_glob.keys():
         w_glob_enc[key] = crypten.cryptensor(w_glob[key])
     print(w_glob)
     print(w_glob_enc)

@@ -58,8 +58,6 @@ class LocalUpdate(object):
         w = dict()
         for key in w_enc.keys():
             w[key] = w_enc[key].get_plain_text()
-        print(w_enc)
-        print(w)
         net.load_state_dict(w)
         net.train()
         # train and update
