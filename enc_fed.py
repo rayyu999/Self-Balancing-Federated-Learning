@@ -107,20 +107,20 @@ if __name__ == '__main__':
     img_size = dp[0][0].shape
 
     # build original model
-    net_glob = None
-    if args.model == 'cnn' and args.dataset == 'cifar':
-        net_glob = CNNCifar(args=args).to(args.device)
-    elif args.model == 'cnn' and args.dataset == 'mnist':
-        net_glob = CNNMnist(args=args).to(args.device)
-    elif args.model == 'mlp':
-        len_in = 1
-        for x in img_size:
-            len_in *= x
-        net_glob = MLP(dim_in=len_in, dim_hidden=200, dim_out=args.num_classes).to(args.device)
-    else:
-        exit('Error: unrecognized model')
-    print(net_glob)
-    net_glob.train()
+    # net_glob = None
+    # if args.model == 'cnn' and args.dataset == 'cifar':
+    #     net_glob = CNNCifar(args=args).to(args.device)
+    # elif args.model == 'cnn' and args.dataset == 'mnist':
+    #     net_glob = CNNMnist(args=args).to(args.device)
+    # elif args.model == 'mlp':
+    #     len_in = 1
+    #     for x in img_size:
+    #         len_in *= x
+    #     net_glob = MLP(dim_in=len_in, dim_hidden=200, dim_out=args.num_classes).to(args.device)
+    # else:
+    #     exit('Error: unrecognized model')
+    # print(net_glob)
+    # net_glob.train()
 
     # copy weights
     # w_glob = net_glob.state_dict()
@@ -171,6 +171,6 @@ if __name__ == '__main__':
     training_time = endtime - starttime
 
     test(net_glob, dp, args,  "self_balanced", imbalanced_way)
-    endtime = datetime.datetime.now()
+
     print("merging time: {m}s; resheduling time: {r}s; training time: {t}s"
           .format(m=merging_time.seconds, r=resheduling_time.seconds, t=training_time.seconds))

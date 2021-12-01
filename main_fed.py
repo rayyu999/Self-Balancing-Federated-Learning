@@ -14,6 +14,8 @@ import DataProcessor
 
 import numpy as np
 
+import datetime
+
 matplotlib.use('Agg')
 
 
@@ -117,7 +119,10 @@ if __name__ == '__main__':
 
     # copy weights
     w_glob = net_glob.state_dict()
+    starttime = datetime.datetime.now()
     train(net_glob, db, w_glob, args)
+    endtime = datetime.datetime.now()
+    normal_time = endtime - starttime
     test(net_glob, dp, args, "non-self_balanced", imbalanced_way)
 
     # build new model
@@ -139,8 +144,24 @@ if __name__ == '__main__':
     w_glob = net_glob.state_dict()
     # self balanced
     db = DataBalance.DataBalance(dp)
+
+    starttime = datetime.datetime.now()
     db.z_score()
+    endtime = datetime.datetime.now()
+    merging_time = endtime - starttime
+
+    starttime = datetime.datetime.now()
     db.assign_clients()
+    endtime = datetime.datetime.now()
+    resheduling_time = endtime - starttime
+
     dp.type = "train"
+    starttime = datetime.datetime.now()
     train(net_glob, db, w_glob, args)
+    endtime = datetime.datetime.now()
+    training_time = endtime - starttime
+
     test(net_glob, dp, args,  "self_balanced", imbalanced_way)
+
+    print("normal time: {n}s; merging time: {m}s; resheduling time: {r}s; training time: {t}s"
+          .format(n = normal_time, m=merging_time.seconds, r=resheduling_time.seconds, t=training_time.seconds))
