@@ -172,5 +172,5 @@ if __name__ == '__main__':
 
     test(net_glob, dp, args,  "self_balanced", imbalanced_way)
 
-    print("merging time: {m}s; resheduling time: {r}s; training time: {t}s"
+    print("merging time: {m}ms; resheduling time: {r}ms; training time: {t}ms"
           .format(m=merging_time.microseconds, r=resheduling_time.microseconds, t=training_time.microseconds))
