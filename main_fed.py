@@ -99,14 +99,15 @@ def train_enc(net_glob, db, w_glob, args):
             loss_locals = []
             if not args.all_clients:
                 w_locals = []
-            need_index = [db.dp.local_train_index[k] for k in mdt]
-            local = LocalUpdate(args=args, dataset=dp, idxs=np.hstack(need_index))
-            w, loss = local.train_enc(
-                net=copy.deepcopy(net_glob).to(args.device), w_enc=copy.deepcopy(w_glob))
-            if args.all_clients:
-                w_locals[i] = copy.deepcopy(w)
-            else:
-                w_locals.append(copy.deepcopy(w))
+            for k in mdt:
+                need_index = db.dp.local_train_index[k]
+                local = LocalUpdate(args=args, dataset=dp, idxs=np.hstack(need_index))
+                w, loss = local.train_enc(
+                    net=copy.deepcopy(net_glob).to(args.device), w_enc=copy.deepcopy(w_glob))
+                if args.all_clients:
+                    w_locals[i] = copy.deepcopy(w)
+                else:
+                    w_locals.append(copy.deepcopy(w))
             loss_locals.append(copy.deepcopy(loss))
 
         # update global weights
@@ -217,7 +218,10 @@ if __name__ == '__main__':
     test(net_glob, dp, args,  "self_balanced", imbalanced_way)
 
     print("normal time: {n}ms; merging time: {m}ms; resheduling time: {r}ms; training time: {t}ms"
-          .format(n = normal_time.microseconds, m=merging_time.microseconds, r=resheduling_time.microseconds, t=training_time.microseconds))
+          .format(n=normal_time.microseconds,
+                  m=merging_time.microseconds,
+                  r=resheduling_time.microseconds,
+                  t=training_time.microseconds))
 
     # build enc model
     crypten.init()

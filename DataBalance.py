@@ -224,6 +224,85 @@ class DataBalance:
             self.dp.local_train_label[k] = np.array(new_label)
         self.dp.refresh_global_data()
 
+    def z_score_col(self):
+        """
+        The FL Server part (Algorithm 2)
+        The td and ta are the downsampling threshold and augmentation threshold
+        Set Ta = -1/Td , the recommended value of td is 3.0 or 3.5
+        The Rad is the ratio we use to control how many augmentations are generated or how many samples are retained.
+        N : Number of classes
+        K : Total number of clients
+        labels : All the data label
+        Ydown : set of majority class
+        Yaug : set of minority class
+        datasets : K clients datasets
+        """
+        # 2 : Initialize
+        r_ad = np.zeros(self.dp.size_class)
+
+        # 3 : Calculate the data size of each class C
+        num_each_class_cipher = dict()
+        for key in collections.Counter(self.dp.global_train_label).keys():
+            num_each_class_cipher[key] = self.client_key_pairs[1]['pk'].encrypt(0)
+        client_pool = set([i for i in range(self.dp.size_device)])
+        for client in client_pool:
+            c1 = collections.Counter(self.dp.local_train_label[client])
+            cipher = dict()
+            for key in c1.keys():
+                cipher[key] = self.pk1.encrypt(c1[key])
+                num_each_class_cipher[key] += cipher[key]
+            self.client_cipher_pool[client] = cipher
+
+        num_each_class = np.zeros(self.dp.size_class)
+        for key in num_each_class_cipher.keys():
+            num_each_class[key] = self.sk1.decrypt(num_each_class_cipher[key])
+
+        # 4 : Calculate the mean m and the standard deviation s of C
+        mean = np.mean(num_each_class)
+        std = np.std(num_each_class, ddof=1)
+        if std == 0:
+            return
+        # 5 : Calculate the z-score
+        z = (num_each_class- mean) / std
+        # 6-12 :
+        y_down = set()
+        y_aug = set()
+        for y in range(self.dp.size_class):
+            if z[y] < self.ta:
+                y_aug.add(y)
+                r_ad[y] = (-std * math.sqrt(z[y] * self.ta) + mean) / num_each_class[y]
+            elif z[y] > self.td:
+                y_down.add(y)
+                r_ad[y] = (std * math.sqrt(z[y] * self.td) + mean) / num_each_class[y]
+
+        # 13 : Send Yaug, Ydown, Rad to all clients ===================================================
+        """
+        The Clients part (Algorithm 2)
+        """
+        # 15-22 :
+        for k in range(self.dp.size_device):
+            print('size: {}'.format(k))
+            new_feature_array = np.empty([0, self.dp.size_feature])
+            new_label = []
+            for i in range(len(self.dp.local_train_feature[k])):
+                if i % 1000 == 0:
+                    print('the {}th feature'.format(i))
+                x, y = self.dp.local_train_feature[k][i], self.dp.local_train_label[k][i]
+                new_x, new_y = x, y
+                if y in y_down:
+                    new_x, new_y = self.down_sample(x, y, r_ad[y])
+                elif y in y_aug:
+                    aug_x, aug_y = self.augment(x, y, r_ad[y]-1)
+                    if aug_x is not None:
+                        new_feature_array = np.vstack([new_feature_array, aug_x])
+                        new_label.append(aug_y)
+                if new_x is not None:
+                    new_feature_array = np.vstack([new_feature_array, new_x])
+                    new_label.append(new_y)
+            self.dp.local_train_feature[k] = new_feature_array
+            self.dp.local_train_label[k] = np.array(new_label)
+        self.dp.refresh_global_data()
+
     @staticmethod
     def down_sample(x, y, r_ad):
         if random.random() < r_ad:
