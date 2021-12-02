@@ -78,6 +78,8 @@ class DataBalance:
                 new_mediator.add(select_client)
                 mediator_label_pool = np.hstack([mediator_label_pool, self.dp.local_train_label[select_client]])
                 client_pool.remove(select_client)
+                for key in self.mediator_distribution.keys():
+                    self.mediator_distribution[key] += self.client_cipher_pool[select_client][key]
             self.mediator.append(new_mediator)
 
     def assign_clients_col(self, balance=True):
@@ -88,26 +90,52 @@ class DataBalance:
 
         client_pool = set([i for i in range(self.dp.size_device)])
 
+        # 用客户端的公钥加密客户端数据
+        for client in client_pool:
+            c1 = collections.Counter(self.dp.local_train_label[client])
+            cipher = dict()
+            for key in collections.Counter(self.dp.global_train_label).keys():
+                if key in c1.keys():
+                    cipher[key] = self.client_key_pairs[client]['pk'].encrypt(c1[key])
+                else:
+                    cipher[key] = self.client_key_pairs[client]['pk'].encrypt(0)
+            self.client_cipher_pool[client] = cipher
+
         while client_pool:
             new_mediator = set()
             mediator_label_pool = np.array([])
+            mediator_distribution_cipher = dict()
             c2 = collections.Counter(self.dp.global_train_label)
-            for key in c2.keys():
-                self.mediator_distribution[key] = self.pk1.encrypt(0)
+            # 用各个客户端的密钥加密当前协调者的分布
+            for client in client_pool:
+                mediator_distribution = dict()
+                for key in c2.keys():
+                    mediator_distribution[key] = self.client_key_pairs[client]['pk'].encrypt(0)
+                mediator_distribution_cipher[client] = mediator_distribution
+
             while client_pool and len(new_mediator) < self.gamma:
                 select_client, kl_score = None, float('inf')
                 for client in client_pool:
                     r = random.randint(1, 1024)
                     d_cipher = dict()
-                    for key in self.mediator_distribution.keys():
-                        d_cipher[key] = (self.mediator_distribution[key] + self.client_cipher_pool[client][key]) * r
-                        d_cipher[key] = self.sk1.decrypt(d_cipher[key])
+                    for key in mediator_distribution_cipher[client].keys():
+                        d_cipher[key] = (mediator_distribution_cipher[client][key] + self.client_cipher_pool[client][key]) * r
+                        d_cipher[key] = self.client_key_pairs[client]['sk'].decrypt(d_cipher[key])
                     new_kl_score = self.dp.get_kl_divergence_enc(self.dp.global_train_label, d_cipher)
                     if new_kl_score < kl_score:
                         select_client = client
                 new_mediator.add(select_client)
                 mediator_label_pool = np.hstack([mediator_label_pool, self.dp.local_train_label[select_client]])
                 client_pool.remove(select_client)
+                # 将新的协调者分布密文转换成用各个客户端公钥加密的密文
+                for client in client_pool:
+                    for key in c2.keys():
+                        cipher = convert_ciphertext(self.client_key_pairs[select_client]['sk'],
+                                                    self.client_key_pairs[select_client]['pk'],
+                                                    self.client_key_pairs[client]['pk'],
+                                                    self.client_cipher_pool[select_client][key])
+                        mediator_distribution_cipher[client][key] += cipher
+
             self.mediator.append(new_mediator)
 
     def z_score(self):
