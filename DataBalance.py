@@ -331,7 +331,7 @@ class DataBalance:
                                                                 num_each_class_cipher[key])
         for key in num_each_class_cipher.keys():
             # 算法1第11行
-            num_each_class_cipher[key] -= random_pool[self.dp.size_class-1]
+            num_each_class_cipher[key] -= random_pool[self.dp.size_device-1]
             # 算法1第12行
             num_each_class_cipher[key] = convert_ciphertext(self.client_key_pairs[self.dp.size_class-1]['sk'],
                                                             self.client_key_pairs[self.dp.size_class-1]['pk'],
