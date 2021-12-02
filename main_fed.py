@@ -295,7 +295,7 @@ if __name__ == '__main__':
     merging_time = endtime - starttime
 
     starttime = datetime.datetime.now()
-    db.assign_clients_enc()
+    db.assign_clients_col()
     endtime = datetime.datetime.now()
     resheduling_time = endtime - starttime
 
