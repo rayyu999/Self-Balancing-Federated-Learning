@@ -310,15 +310,15 @@ class DataBalance:
         for client in client_pool:
             c1 = collections.Counter(self.dp.local_train_label[client])
             r_i = random.randint(1, 1024)
+            random_pool[client] = self.client_key_pairs[client]['pk'].encrypt(r_i)
             for key in collections.Counter(self.dp.global_train_label).keys():
                 if key in c1:
                     num_each_class[key] += c1[key] + r_i
                 else:
                     num_each_class[key] += r_i
-                random_pool[client] = self.client_key_pairs[client]['pk'].encrypt(r_i)
 
         for key in collections.Counter(self.dp.global_train_label).keys():
-            num_each_class_cipher[key] = self.client_key_pairs[1]['pk'].encrypt(num_each_class[key])
+            num_each_class_cipher[key] = self.client_key_pairs[0]['pk'].encrypt(num_each_class[key])
 
         for client in range(self.dp.size_device - 1):
             for key in num_each_class_cipher.keys():
