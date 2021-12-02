@@ -179,7 +179,9 @@ if __name__ == '__main__':
     normal_time = endtime - starttime
     test(net_glob, dp, args, "non-self_balanced", imbalanced_way)
 
-    print('-'*30)
+    print("normal time: {n}ms".format(n=normal_time.microseconds))
+
+    print('-'*80)
 
     # build new model
     net_glob = None
@@ -219,13 +221,12 @@ if __name__ == '__main__':
 
     test(net_glob, dp, args,  "self_balanced", imbalanced_way)
 
-    print("normal time: {n}ms; merging time: {m}ms; resheduling time: {r}ms; training time: {t}ms"
-          .format(n=normal_time.microseconds,
-                  m=merging_time.microseconds,
+    print("merging time: {m}ms; resheduling time: {r}ms; training time: {t}ms"
+          .format(m=merging_time.microseconds,
                   r=resheduling_time.microseconds,
                   t=training_time.microseconds))
 
-    print('-' * 30)
+    print('-'*80)
 
     # 半诚实
     crypten.init()
@@ -272,7 +273,7 @@ if __name__ == '__main__':
     print("merging time: {m}ms; resheduling time: {r}ms; training time: {t}ms"
           .format(m=merging_time.microseconds, r=resheduling_time.microseconds, t=training_time.microseconds))
 
-    print('-' * 30)
+    print('-'*80)
 
     # 合谋
     crypten.init()
