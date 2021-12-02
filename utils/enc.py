@@ -7,4 +7,5 @@ def convert_ciphertext(sk1, pk1, pk2, ciphertext):
     mask = ciphertext + r_ciphertext
     plaintext = sk1.decrypt(mask)
     ciphertext = pk2.encrypt(plaintext)
+    r_ciphertext = pk2.encrypt(r)
     return ciphertext - r_ciphertext
