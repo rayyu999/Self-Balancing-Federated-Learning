@@ -6,6 +6,8 @@ from imgaug import augmenters as iaa
 from phe import paillier
 import datetime
 
+from utils.enc import convert_ciphertext
+
 
 class DataBalance:
     def __init__(self, dp):
@@ -241,21 +243,49 @@ class DataBalance:
         r_ad = np.zeros(self.dp.size_class)
 
         # 3 : Calculate the data size of each class C
+        num_each_class = np.zeros(self.dp.size_class)
         num_each_class_cipher = dict()
-        for key in collections.Counter(self.dp.global_train_label).keys():
-            num_each_class_cipher[key] = self.client_key_pairs[1]['pk'].encrypt(0)
         client_pool = set([i for i in range(self.dp.size_device)])
+        random_pool = dict()
+
+        # 算法1 - 合并各个客户端的分布
         for client in client_pool:
             c1 = collections.Counter(self.dp.local_train_label[client])
+            r_i = random.randint(1, 1024)
             cipher = dict()
-            for key in c1.keys():
-                cipher[key] = self.pk1.encrypt(c1[key])
-                num_each_class_cipher[key] += cipher[key]
-            self.client_cipher_pool[client] = cipher
+            for key in collections.Counter(self.dp.global_train_label).keys():
+                if key in c1:
+                    num_each_class[key] += c1[key] + r_i
+                    cipher[key] = self.client_key_pairs[1]['pk'].encrypt(c1[key])
+                else:
+                    num_each_class[key] += r_i
+                    cipher[key] = self.client_key_pairs[1]['pk'].encrypt(0)
+                # 记录每个客户端的分布密文
+                self.client_cipher_pool[client] = cipher
+                random_pool[client] = self.client_key_pairs[client]['pk'].encrypt(r_i)
 
-        num_each_class = np.zeros(self.dp.size_class)
+        for key in collections.Counter(self.dp.global_train_label).keys():
+            num_each_class_cipher[key] = self.client_key_pairs[1]['pk'].encrypt(num_each_class[key])
+
+        for client in range(self.dp.size_device - 1):
+            for key in num_each_class_cipher.keys():
+                # 算法1第9行
+                num_each_class_cipher[key] -= random_pool[client]
+                # 算法1第10行
+                num_each_class_cipher[key] = convert_ciphertext(self.client_key_pairs[client]['sk'],
+                                                                self.client_key_pairs[client]['pk'],
+                                                                self.client_key_pairs[client+1]['pk'],
+                                                                num_each_class_cipher[key])
         for key in num_each_class_cipher.keys():
-            num_each_class[key] = self.sk1.decrypt(num_each_class_cipher[key])
+            # 算法1第11行
+            num_each_class_cipher[key] -= random_pool[self.dp.size_class-1]
+            # 算法1第12行
+            num_each_class_cipher[key] = convert_ciphertext(self.client_key_pairs[self.dp.size_class-1]['sk'],
+                                                            self.client_key_pairs[self.dp.size_class-1]['pk'],
+                                                            self.pk0,
+                                                            num_each_class_cipher[key])
+            # 算法1第13行
+            num_each_class[key] = self.sk0.decrypt(num_each_class_cipher[key])
 
         # 4 : Calculate the mean m and the standard deviation s of C
         mean = np.mean(num_each_class)
