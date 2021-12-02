@@ -179,6 +179,8 @@ if __name__ == '__main__':
     normal_time = endtime - starttime
     test(net_glob, dp, args, "non-self_balanced", imbalanced_way)
 
+    print('-'*30)
+
     # build new model
     net_glob = None
     if args.model == 'cnn' and args.dataset == 'cifar':
@@ -222,6 +224,8 @@ if __name__ == '__main__':
                   m=merging_time.microseconds,
                   r=resheduling_time.microseconds,
                   t=training_time.microseconds))
+
+    print('-' * 30)
 
     # 半诚实
     crypten.init()
@@ -267,6 +271,8 @@ if __name__ == '__main__':
 
     print("merging time: {m}ms; resheduling time: {r}ms; training time: {t}ms"
           .format(m=merging_time.microseconds, r=resheduling_time.microseconds, t=training_time.microseconds))
+
+    print('-' * 30)
 
     # 合谋
     crypten.init()
