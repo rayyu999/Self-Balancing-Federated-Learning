@@ -223,7 +223,7 @@ if __name__ == '__main__':
                   r=resheduling_time.microseconds,
                   t=training_time.microseconds))
 
-    # build enc model
+    # 半诚实
     crypten.init()
     net_glob = None
     if args.model == 'cnn' and args.dataset == 'cifar':
@@ -246,6 +246,51 @@ if __name__ == '__main__':
 
     starttime = datetime.datetime.now()
     db.z_score_enc()
+    endtime = datetime.datetime.now()
+    merging_time = endtime - starttime
+
+    starttime = datetime.datetime.now()
+    db.assign_clients_enc()
+    endtime = datetime.datetime.now()
+    resheduling_time = endtime - starttime
+
+    dp.type = "train"
+    starttime = datetime.datetime.now()
+    w_glob_enc = dict()
+    for key in w_glob.keys():
+        w_glob_enc[key] = crypten.cryptensor(w_glob[key])
+    train_enc(net_glob, db, w_glob_enc, args)
+    endtime = datetime.datetime.now()
+    training_time = endtime - starttime
+
+    test(net_glob, dp, args, "self_balanced", imbalanced_way)
+
+    print("merging time: {m}ms; resheduling time: {r}ms; training time: {t}ms"
+          .format(m=merging_time.microseconds, r=resheduling_time.microseconds, t=training_time.microseconds))
+
+    # 合谋
+    crypten.init()
+    net_glob = None
+    if args.model == 'cnn' and args.dataset == 'cifar':
+        net_glob = CNNCifar(args=args).to(args.device)
+    elif args.model == 'cnn' and args.dataset == 'mnist':
+        net_glob = CNNMnist(args=args).to(args.device)
+    elif args.model == 'mlp':
+        len_in = 1
+        for x in img_size:
+            len_in *= x
+        net_glob = MLP(dim_in=len_in, dim_hidden=200, dim_out=args.num_classes).to(args.device)
+    else:
+        exit('Error: unrecognized model')
+    print(net_glob)
+    net_glob.train()
+    # copy weights
+    w_glob = net_glob.state_dict()
+    # self balanced
+    db = DataBalance.DataBalance(dp)
+
+    starttime = datetime.datetime.now()
+    db.z_score_col()
     endtime = datetime.datetime.now()
     merging_time = endtime - starttime
 

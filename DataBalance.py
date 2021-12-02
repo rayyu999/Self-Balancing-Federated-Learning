@@ -80,6 +80,36 @@ class DataBalance:
                 client_pool.remove(select_client)
             self.mediator.append(new_mediator)
 
+    def assign_clients_col(self, balance=True):
+        # assign the devices to each mediator using greedy algorithm
+        if not balance:
+            self.mediator = [{i} for i in range(self.dp.size_device)]
+            return
+
+        client_pool = set([i for i in range(self.dp.size_device)])
+
+        while client_pool:
+            new_mediator = set()
+            mediator_label_pool = np.array([])
+            c2 = collections.Counter(self.dp.global_train_label)
+            for key in c2.keys():
+                self.mediator_distribution[key] = self.pk1.encrypt(0)
+            while client_pool and len(new_mediator) < self.gamma:
+                select_client, kl_score = None, float('inf')
+                for client in client_pool:
+                    r = random.randint(1, 1024)
+                    d_cipher = dict()
+                    for key in self.mediator_distribution.keys():
+                        d_cipher[key] = (self.mediator_distribution[key] + self.client_cipher_pool[client][key]) * r
+                        d_cipher[key] = self.sk1.decrypt(d_cipher[key])
+                    new_kl_score = self.dp.get_kl_divergence_enc(self.dp.global_train_label, d_cipher)
+                    if new_kl_score < kl_score:
+                        select_client = client
+                new_mediator.add(select_client)
+                mediator_label_pool = np.hstack([mediator_label_pool, self.dp.local_train_label[select_client]])
+                client_pool.remove(select_client)
+            self.mediator.append(new_mediator)
+
     def z_score(self):
         """
         The FL Server part (Algorithm 2)
@@ -252,16 +282,11 @@ class DataBalance:
         for client in client_pool:
             c1 = collections.Counter(self.dp.local_train_label[client])
             r_i = random.randint(1, 1024)
-            cipher = dict()
             for key in collections.Counter(self.dp.global_train_label).keys():
                 if key in c1:
                     num_each_class[key] += c1[key] + r_i
-                    cipher[key] = self.client_key_pairs[1]['pk'].encrypt(c1[key])
                 else:
                     num_each_class[key] += r_i
-                    cipher[key] = self.client_key_pairs[1]['pk'].encrypt(0)
-                # 记录每个客户端的分布密文
-                self.client_cipher_pool[client] = cipher
                 random_pool[client] = self.client_key_pairs[client]['pk'].encrypt(r_i)
 
         for key in collections.Counter(self.dp.global_train_label).keys():
