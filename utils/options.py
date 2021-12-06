@@ -13,6 +13,7 @@ def args_parser():
     # federated arguments
     parser.add_argument('--epochs', type=int, default=10, help="rounds of training")
     parser.add_argument('--num_users', type=int, default=3, help="number of users: K")
+    parser.add_argument('--mediator_users_num', type=int, default=3, help="the maximum user number for a mediator")
     parser.add_argument('--frac', type=float, default=0.1, help="the fraction of clients: C")
     parser.add_argument('--local_ep', type=int, default=5, help="the number of local epochs: E")
     parser.add_argument('--local_bs', type=int, default=10, help="local batch size: B")
@@ -42,7 +43,5 @@ def args_parser():
     parser.add_argument('--seed', type=int, default=1, help='random seed (default: 1)')
     parser.add_argument('--all_clients', action='store_true', help='aggregation over all clients')
     parser.add_argument('--confusion_matrix', action='store_true', help='plot test confusion matrix')
-    parser.add_argument('--semi_honest', action='store_true', help='semi-honest case')
-    parser.add_argument('--collusion', action='store_true', help='collusion case')
     args = parser.parse_args()
     return args

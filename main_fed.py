@@ -150,7 +150,7 @@ if __name__ == '__main__':
         dp.gen_global_imbalance(5, 2000, [500, 500, 1000, 1000, 1500, 1500, 3000, 1000, 0, 0])
         imbalanced_way = "global"
     # without self-balanced
-    db = DataBalance.DataBalance(dp)
+    db = DataBalance.DataBalance(dp, args.mediator_users_num)
     db.assign_clients(balance=False)
     # load dataset and split users
     img_size = dp[0][0].shape
@@ -201,7 +201,7 @@ if __name__ == '__main__':
     # copy weights
     w_glob = net_glob.state_dict()
     # self balanced
-    db = DataBalance.DataBalance(dp)
+    db = DataBalance.DataBalance(dp, args.mediator_users_num)
 
     starttime = datetime.datetime.now()
     db.z_score()
@@ -247,7 +247,7 @@ if __name__ == '__main__':
     # copy weights
     w_glob = net_glob.state_dict()
     # self balanced
-    db = DataBalance.DataBalance(dp)
+    db = DataBalance.DataBalance(dp, args.mediator_users_num)
 
     starttime = datetime.datetime.now()
     db.z_score_enc()
@@ -294,7 +294,7 @@ if __name__ == '__main__':
     # copy weights
     w_glob = net_glob.state_dict()
     # self balanced
-    db = DataBalance.DataBalance(dp)
+    db = DataBalance.DataBalance(dp, args.mediator_users_num)
 
     starttime = datetime.datetime.now()
     db.z_score_col()

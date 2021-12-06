@@ -10,12 +10,12 @@ from utils.enc import convert_ciphertext
 
 
 class DataBalance:
-    def __init__(self, dp):
+    def __init__(self, dp, mediator_users_num):
         self.dp = dp  # a variable of class DataProcessor
         self.td = 0.1
         self.ta = -0.1
         self.mediator = []
-        self.gamma = 3  # the maximum number for a mediator can communicate
+        self.gamma = mediator_users_num  # the maximum number for a mediator can communicate
 
         self.mediator_distribution = dict()
         self.client_cipher_pool = dict()
