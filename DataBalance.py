@@ -151,6 +151,9 @@ class DataBalance:
         Yaug : set of minority class
         datasets : K clients datasets
         """
+
+        starttime = datetime.datetime.now()
+
         # 2 : Initialize
         r_ad = np.zeros(self.dp.size_class)
 
@@ -176,6 +179,9 @@ class DataBalance:
             elif z[y] > self.td:
                 y_down.add(y)
                 r_ad[y] = (std * math.sqrt(z[y] * self.td) + mean) / num_each_class[y]
+
+        endtime = datetime.datetime.now()
+        print("merging time: {m}".format(m=(endtime - starttime).microseconds))
 
         # 13 : Send Yaug, Ydown, Rad to all clients ===================================================
         """
@@ -218,6 +224,9 @@ class DataBalance:
         Yaug : set of minority class
         datasets : K clients datasets
         """
+
+        starttime = datetime.datetime.now()
+
         # 2 : Initialize
         r_ad = np.zeros(self.dp.size_class)
 
@@ -255,6 +264,9 @@ class DataBalance:
             elif z[y] > self.td:
                 y_down.add(y)
                 r_ad[y] = (std * math.sqrt(z[y] * self.td) + mean) / num_each_class[y]
+
+        endtime = datetime.datetime.now()
+        print("merging time: {m}".format(m=(endtime - starttime).microseconds))
 
         # 13 : Send Yaug, Ydown, Rad to all clients ===================================================
         """
@@ -297,6 +309,9 @@ class DataBalance:
         Yaug : set of minority class
         datasets : K clients datasets
         """
+
+        starttime = datetime.datetime.now()
+
         # 2 : Initialize
         r_ad = np.zeros(self.dp.size_class)
 
@@ -357,6 +372,9 @@ class DataBalance:
             elif z[y] > self.td:
                 y_down.add(y)
                 r_ad[y] = (std * math.sqrt(z[y] * self.td) + mean) / num_each_class[y]
+
+        endtime = datetime.datetime.now()
+        print("merging time: {m}".format(m=(endtime - starttime).microseconds))
 
         # 13 : Send Yaug, Ydown, Rad to all clients ===================================================
         """
