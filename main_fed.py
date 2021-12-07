@@ -140,7 +140,7 @@ if __name__ == '__main__':
     args.device = torch.device('cuda:{}'.format(args.gpu) if torch.cuda.is_available() and args.gpu != -1 else 'cpu')
     # new instances for DataProcessor and DataBalance
     dp = DataProcessor.DataProcessor()
-    dp.get_input('mnist')
+    dp.get_input(args.dataset)
     imbalanced_way = ""
     if args.size_balance:
         dp.gen_size_imbalance(size_imbalance_list)
