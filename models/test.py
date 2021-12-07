@@ -33,6 +33,8 @@ def test_img(net_g, datatest, args, is_self_balanced, imbalanced_way):
         y_pred_squeeze = torch.squeeze(y_pred).tolist()
         correct += y_pred.eq(target.data.view_as(y_pred)).long().cpu().sum()
         y_true = target.tolist()
+        print(y_pred_squeeze)
+        print(y_pred_list)
         y_pred_list += y_pred_squeeze
         y_true_list += y_true
 
