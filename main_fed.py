@@ -14,7 +14,7 @@ import DataProcessor
 
 import numpy as np
 
-import datetime
+import time
 import crypten
 
 matplotlib.use('Agg')
@@ -173,13 +173,13 @@ if __name__ == '__main__':
 
     # copy weights
     w_glob = net_glob.state_dict()
-    starttime = datetime.datetime.now()
+    starttime = time.clock()
     train(net_glob, db, w_glob, args)
-    endtime = datetime.datetime.now()
+    endtime = time.clock()
     normal_time = endtime - starttime
     test(net_glob, dp, args, "non-self_balanced", imbalanced_way)
 
-    print("normal time: {n}ms".format(n=normal_time.microseconds))
+    print("normal time: {n}ms".format(n=normal_time))
 
     print('-'*80)
 
@@ -203,28 +203,28 @@ if __name__ == '__main__':
     # self balanced
     db = DataBalance.DataBalance(dp, args.mediator_users_num)
 
-    starttime = datetime.datetime.now()
+    starttime = time.clock()
     db.z_score()
-    endtime = datetime.datetime.now()
+    endtime = time.clock()
     merging_time = endtime - starttime
 
-    starttime = datetime.datetime.now()
+    starttime = time.clock()
     db.assign_clients()
-    endtime = datetime.datetime.now()
+    endtime = time.clock()
     resheduling_time = endtime - starttime
 
     dp.type = "train"
-    starttime = datetime.datetime.now()
+    starttime = time.clock()
     train(net_glob, db, w_glob, args)
-    endtime = datetime.datetime.now()
+    endtime = time.clock()
     training_time = endtime - starttime
 
     test(net_glob, dp, args,  "self_balanced", imbalanced_way)
 
     print("merging&augment time: {m}ms; resheduling time: {r}ms; training time: {t}ms"
-          .format(m=merging_time.microseconds,
-                  r=resheduling_time.microseconds,
-                  t=training_time.microseconds))
+          .format(m=merging_time,
+                  r=resheduling_time,
+                  t=training_time))
 
     print('-'*80)
 
@@ -249,29 +249,29 @@ if __name__ == '__main__':
     # self balanced
     db = DataBalance.DataBalance(dp, args.mediator_users_num)
 
-    starttime = datetime.datetime.now()
+    starttime = time.clock()
     db.z_score_enc()
-    endtime = datetime.datetime.now()
+    endtime = time.clock()
     merging_time = endtime - starttime
 
-    starttime = datetime.datetime.now()
+    starttime = time.clock()
     db.assign_clients_enc()
-    endtime = datetime.datetime.now()
+    endtime = time.clock()
     resheduling_time = endtime - starttime
 
     dp.type = "train"
-    starttime = datetime.datetime.now()
+    starttime = time.clock()
     w_glob_enc = dict()
     for key in w_glob.keys():
         w_glob_enc[key] = crypten.cryptensor(w_glob[key])
     train_enc(net_glob, db, w_glob_enc, args)
-    endtime = datetime.datetime.now()
+    endtime = time.clock()
     training_time = endtime - starttime
 
     test(net_glob, dp, args, "self_balanced", imbalanced_way)
 
     print("merging&augment time: {m}ms; resheduling time: {r}ms; training time: {t}ms"
-          .format(m=merging_time.microseconds, r=resheduling_time.microseconds, t=training_time.microseconds))
+          .format(m=merging_time, r=resheduling_time, t=training_time))
 
     print('-'*80)
 
@@ -296,26 +296,26 @@ if __name__ == '__main__':
     # self balanced
     db = DataBalance.DataBalance(dp, args.mediator_users_num)
 
-    starttime = datetime.datetime.now()
+    starttime = time.clock()
     db.z_score_col()
-    endtime = datetime.datetime.now()
+    endtime = time.clock()
     merging_time = endtime - starttime
 
-    starttime = datetime.datetime.now()
+    starttime = time.clock()
     db.assign_clients_col()
-    endtime = datetime.datetime.now()
+    endtime = time.clock()
     resheduling_time = endtime - starttime
 
     dp.type = "train"
-    starttime = datetime.datetime.now()
+    starttime = time.clock()
     w_glob_enc = dict()
     for key in w_glob.keys():
         w_glob_enc[key] = crypten.cryptensor(w_glob[key])
     train_enc(net_glob, db, w_glob_enc, args)
-    endtime = datetime.datetime.now()
+    endtime = time.clock()
     training_time = endtime - starttime
 
     test(net_glob, dp, args, "self_balanced", imbalanced_way)
 
     print("merging&augment time: {m}ms; resheduling time: {r}ms; training time: {t}ms"
-          .format(m=merging_time.microseconds, r=resheduling_time.microseconds, t=training_time.microseconds))
+          .format(m=merging_time, r=resheduling_time, t=training_time))

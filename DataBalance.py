@@ -4,7 +4,7 @@ import random
 import collections
 from imgaug import augmenters as iaa
 from phe import paillier
-import datetime
+import time
 
 from utils.enc import convert_ciphertext
 
@@ -152,7 +152,7 @@ class DataBalance:
         datasets : K clients datasets
         """
 
-        starttime = datetime.datetime.now()
+        starttime = time.clock()
 
         # 2 : Initialize
         r_ad = np.zeros(self.dp.size_class)
@@ -180,8 +180,8 @@ class DataBalance:
                 y_down.add(y)
                 r_ad[y] = (std * math.sqrt(z[y] * self.td) + mean) / num_each_class[y]
 
-        endtime = datetime.datetime.now()
-        print("merging time: {m}".format(m=(endtime - starttime).microseconds))
+        endtime = time.clock()
+        print("merging time: {m}".format(m=(endtime - starttime)))
 
         # 13 : Send Yaug, Ydown, Rad to all clients ===================================================
         """
@@ -225,7 +225,7 @@ class DataBalance:
         datasets : K clients datasets
         """
 
-        starttime = datetime.datetime.now()
+        starttime = time.clock()
 
         # 2 : Initialize
         r_ad = np.zeros(self.dp.size_class)
@@ -265,8 +265,8 @@ class DataBalance:
                 y_down.add(y)
                 r_ad[y] = (std * math.sqrt(z[y] * self.td) + mean) / num_each_class[y]
 
-        endtime = datetime.datetime.now()
-        print("merging time: {m}".format(m=(endtime - starttime).microseconds))
+        endtime = time.clock()
+        print("merging time: {m}".format(m=(endtime - starttime)))
 
         # 13 : Send Yaug, Ydown, Rad to all clients ===================================================
         """
@@ -310,7 +310,7 @@ class DataBalance:
         datasets : K clients datasets
         """
 
-        starttime = datetime.datetime.now()
+        starttime = time.clock()
 
         # 2 : Initialize
         r_ad = np.zeros(self.dp.size_class)
@@ -373,8 +373,8 @@ class DataBalance:
                 y_down.add(y)
                 r_ad[y] = (std * math.sqrt(z[y] * self.td) + mean) / num_each_class[y]
 
-        endtime = datetime.datetime.now()
-        print("merging time: {m}".format(m=(endtime - starttime).microseconds))
+        endtime = time.clock()
+        print("merging time: {m}".format(m=(endtime - starttime)))
 
         # 13 : Send Yaug, Ydown, Rad to all clients ===================================================
         """
