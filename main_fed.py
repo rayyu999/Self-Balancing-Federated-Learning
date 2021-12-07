@@ -20,7 +20,7 @@ import crypten
 matplotlib.use('Agg')
 
 ratio = 1000000
-size_imbalance_list = [5000, 5000, 2000, 2000, 1000, 1000]
+size_imbalance_list = [5000, 2000, 1000]
 
 def train(net_glob, db, w_glob, args):
     # training
