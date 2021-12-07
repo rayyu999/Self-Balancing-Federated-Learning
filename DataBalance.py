@@ -8,6 +8,7 @@ import time
 
 from utils.enc import convert_ciphertext
 
+ratio = 1000000
 
 class DataBalance:
     def __init__(self, dp, mediator_users_num):
@@ -152,7 +153,7 @@ class DataBalance:
         datasets : K clients datasets
         """
 
-        starttime = time.clock()
+        starttime = time.perf_counter_ns()
 
         # 2 : Initialize
         r_ad = np.zeros(self.dp.size_class)
@@ -180,8 +181,8 @@ class DataBalance:
                 y_down.add(y)
                 r_ad[y] = (std * math.sqrt(z[y] * self.td) + mean) / num_each_class[y]
 
-        endtime = time.clock()
-        print("merging time: {m}".format(m=(endtime - starttime)))
+        endtime = time.perf_counter_ns()
+        print("merging time: {m}".format(m=(endtime - starttime)/ratio))
 
         # 13 : Send Yaug, Ydown, Rad to all clients ===================================================
         """
@@ -225,7 +226,7 @@ class DataBalance:
         datasets : K clients datasets
         """
 
-        starttime = time.clock()
+        starttime = time.perf_counter_ns()
 
         # 2 : Initialize
         r_ad = np.zeros(self.dp.size_class)
@@ -265,8 +266,8 @@ class DataBalance:
                 y_down.add(y)
                 r_ad[y] = (std * math.sqrt(z[y] * self.td) + mean) / num_each_class[y]
 
-        endtime = time.clock()
-        print("merging time: {m}".format(m=(endtime - starttime)))
+        endtime = time.perf_counter_ns()
+        print("merging time: {m}".format(m=(endtime - starttime)/ratio))
 
         # 13 : Send Yaug, Ydown, Rad to all clients ===================================================
         """
@@ -310,7 +311,7 @@ class DataBalance:
         datasets : K clients datasets
         """
 
-        starttime = time.clock()
+        starttime = time.perf_counter_ns()
 
         # 2 : Initialize
         r_ad = np.zeros(self.dp.size_class)
@@ -373,8 +374,8 @@ class DataBalance:
                 y_down.add(y)
                 r_ad[y] = (std * math.sqrt(z[y] * self.td) + mean) / num_each_class[y]
 
-        endtime = time.clock()
-        print("merging time: {m}".format(m=(endtime - starttime)))
+        endtime = time.perf_counter_ns()
+        print("merging time: {m}".format(m=(endtime - starttime)/ratio))
 
         # 13 : Send Yaug, Ydown, Rad to all clients ===================================================
         """
