@@ -143,7 +143,7 @@ if __name__ == '__main__':
     dp.get_input('mnist')
     imbalanced_way = ""
     if args.size_balance:
-        dp.gen_size_imbalance([5000, 2000, 1000])
+        dp.gen_size_imbalance(size_imbalance_list)
         imbalanced_way = "size"
     elif args.local_balance:
         dp.gen_local_imbalance(10, 5000, 0.8)
