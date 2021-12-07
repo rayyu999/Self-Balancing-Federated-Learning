@@ -321,3 +321,6 @@ if __name__ == '__main__':
 
     print("merging&augment time: {m}ms; resheduling time: {r}ms; training time: {t}ms"
           .format(m=merging_time/ratio, r=resheduling_time/ratio, t=training_time/ratio))
+    print(merging_time)
+    print(resheduling_time)
+    print(training_time)
