@@ -1,5 +1,6 @@
-
 # 各测试用例
+
+# 3 users & 3 mediators
 size_imbalance_list = [20000, 7000, 3000]
 
 # size_imbalance_list = [
