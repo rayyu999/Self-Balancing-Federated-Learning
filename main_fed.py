@@ -142,6 +142,7 @@ if __name__ == '__main__':
     # parse args
     args = args_parser()
     args.device = torch.device('cuda:{}'.format(args.gpu) if torch.cuda.is_available() and args.gpu != -1 else 'cpu')
+    print(args.device)
     # new instances for DataProcessor and DataBalance
     dp = DataProcessor.DataProcessor()
     dp.get_input(args.dataset)
