@@ -4,6 +4,7 @@ import copy
 import torch
 
 from utils.options import args_parser
+from utils.test_cases import size_imbalance_list
 from models.Update import LocalUpdate
 from models.Nets import MLP, CNNMnist, CNNCifar
 from models.Fed import FedAvg, FedAvg_enc
